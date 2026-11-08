@@ -47,7 +47,14 @@ jobs:
           cp -R build/Build/Products/Release-iphoneos/BerkKeyboard.app Payload/
           cd Payload/..
           zip -r BerkKeyboard.ipa Payload
-
+      - name: Verify IPA
+        run: |
+          echo "IPA FILE SIZE:"
+          ls -lh BerkKeyboard.ipa
+          echo "IPA CONTENTS:"
+          unzip -l BerkKeyboard.ipa
+          echo "IPA INTEGRITY:"
+          unzip -t BerkKeyboard.ipa
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
