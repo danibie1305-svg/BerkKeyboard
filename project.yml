@@ -1,0 +1,41 @@
+name: BerkKeyboard
+options:
+  bundleIdPrefix: com.tuonome
+  deploymentTarget:
+    iOS: "15.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    DEVELOPMENT_TEAM: ""   # inserisci il tuo Team ID, oppure scegli il team in Xcode
+targets:
+  BerkKeyboard:
+    type: application
+    platform: iOS
+    sources: [App, Shared]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.tuonome.berkkeyboard
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Berk Keyboard
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+    dependencies:
+      - target: BerkKeyboardExtension
+  BerkKeyboardExtension:
+    type: app-extension
+    platform: iOS
+    sources: [Keyboard, Shared]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.tuonome.berkkeyboard.keyboard
+    info:
+      path: Keyboard/Info.plist
+      properties:
+        CFBundleDisplayName: Berk Keyboard
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.keyboard-service
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).KeyboardViewController
+          NSExtensionAttributes:
+            IsASCIICapable: true
+            PrefersRightToLeft: false
+            PrimaryLanguage: it-IT
+            RequestsOpenAccess: false
