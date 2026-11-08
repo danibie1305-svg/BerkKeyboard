@@ -32,7 +32,15 @@ jobs:
             -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO \
             build
-
+      - name: Inspect built app
+        run: |
+          APP_PATH="build/Build/Products/Release-iphoneos/BerkKeyboard.app"
+          echo "APP CONTENTS:"
+          find "$APP_PATH" -maxdepth 4 -print
+          echo "APP SIZE:"
+          du -sh "$APP_PATH"
+          echo "KEYBOARD EXTENSIONS:"
+          find "$APP_PATH" -type d -name "*.appex" -print
       - name: Package IPA
         run: |
           mkdir -p Payload
