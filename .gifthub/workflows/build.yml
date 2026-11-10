@@ -1,0 +1,65 @@
+
+name: BerkKeyboard iOS Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'BerkKeyboard/**'
+      - '.github/workflows/build.yml'
+
+jobs:
+  build:
+    name: Build iOS app and keyboard extension
+    runs-on: macos-15
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: BerkKeyboard
+        run: xcodegen generate
+
+      - name: Build for iPhone
+        run: |
+          xcodebuild \
+            -project BerkKeyboard/BerkKeyboard.xcodeproj \
+            -scheme BerkKeyboard \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Verify keyboard extension is embedded
+        run: |
+          APP="$RUNNER_TEMP/DerivedData/Build/Products/Release-iphoneos/BerkKeyboard.app"
+          test -d "$APP" || { echo "ERROR: BerkKeyboard.app not found"; exit 1; }
+          test -d "$APP/PlugIns/BerkKeyboardExtension.appex" || {
+            echo "ERROR: BerkKeyboardExtension.appex is missing from PlugIns"
+            exit 1
+          }
+          echo "Keyboard extension found inside the app."
+
+      - name: Package IPA
+        run: |
+          APP="$RUNNER_TEMP/DerivedData/Build/Products/Release-iphoneos/BerkKeyboard.app"
+          mkdir -p Payload
+          cp -R "$APP" Payload/
+          /usr/bin/zip -qry BerkKeyboard-IPA.ipa Payload
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BerkKeyboard-IPA
+          path: BerkKeyboard-IPA.ipa
+          if-no-files-found: error
